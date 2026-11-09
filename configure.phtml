@@ -1,0 +1,110 @@
+<?php
+declare(strict_types=1);
+/** @var EmailNotifierExtension $this */
+$selectedFeedIds = $this->selectedFeedIds();
+$encryption = $this->getUserConfigurationString('smtp_encryption') ?? EmailNotifierExtension::ENCRYPTIONS[0];
+$hasPassword = ($this->getUserConfigurationString('smtp_password') ?? '') !== '';
+?>
+<p class="alert alert-info"><?= _t('ext.email_notifier.description') ?></p>
+<form action="<?= _url('extension', 'configure', 'e', urlencode($this->getName())) ?>" method="post">
+	<input type="hidden" name="_csrf" value="<?= FreshRSS_Auth::csrfToken() ?>" />
+
+	<fieldset>
+		<legend><?= _t('ext.email_notifier.feeds') ?></legend>
+		<?php foreach (FreshRSS_Context::categories() as $category) {
+			if (empty($category->feeds())) {
+				continue;
+			}
+		?>
+		<div class="form-group">
+			<label class="group-name"><?= $category->name() ?></label>
+			<div class="group-controls">
+				<?php foreach ($category->feeds() as $feed) { ?>
+				<label class="checkbox" for="feed_<?= $feed->id() ?>">
+					<input type="checkbox" name="feeds[]" id="feed_<?= $feed->id() ?>" value="<?= $feed->id() ?>"<?=
+						in_array($feed->id(), $selectedFeedIds, true) ? ' checked="checked"' : '' ?> />
+					<?= $feed->name() ?>
+				</label>
+				<?php } ?>
+			</div>
+		</div>
+		<?php } ?>
+	</fieldset>
+
+	<fieldset>
+		<legend><?= _t('ext.email_notifier.smtp') ?></legend>
+		<div class="form-group">
+			<label class="group-name" for="smtp_host"><?= _t('ext.email_notifier.smtp_host') ?></label>
+			<div class="group-controls">
+				<input type="text" name="smtp_host" id="smtp_host" placeholder="smtp.example.com" value="<?=
+					htmlspecialchars($this->getUserConfigurationString('smtp_host') ?? '', ENT_COMPAT, 'UTF-8') ?>" />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="smtp_port"><?= _t('ext.email_notifier.smtp_port') ?></label>
+			<div class="group-controls">
+				<input type="number" name="smtp_port" id="smtp_port" min="1" max="65535" value="<?=
+					$this->getUserConfigurationInt('smtp_port') ?? EmailNotifierExtension::DEFAULT_PORT ?>" />
+				<p class="help"><?= _t('ext.email_notifier.smtp_port_help') ?></p>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="smtp_encryption"><?= _t('ext.email_notifier.smtp_encryption') ?></label>
+			<div class="group-controls">
+				<select name="smtp_encryption" id="smtp_encryption">
+					<?php foreach (EmailNotifierExtension::ENCRYPTIONS as $value) { ?>
+					<option value="<?= $value ?>"<?= $value === $encryption ? ' selected="selected"' : '' ?>><?=
+						_t('ext.email_notifier.encryption_' . $value) ?></option>
+					<?php } ?>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="smtp_username"><?= _t('ext.email_notifier.smtp_username') ?></label>
+			<div class="group-controls">
+				<input type="text" name="smtp_username" id="smtp_username" autocomplete="off" value="<?=
+					htmlspecialchars($this->getUserConfigurationString('smtp_username') ?? '', ENT_COMPAT, 'UTF-8') ?>" />
+				<p class="help"><?= _t('ext.email_notifier.smtp_username_help') ?></p>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="smtp_password"><?= _t('ext.email_notifier.smtp_password') ?></label>
+			<div class="group-controls">
+				<input type="password" name="smtp_password" id="smtp_password" autocomplete="new-password"<?=
+					$hasPassword ? ' placeholder="••••••••"' : '' ?> />
+				<?php if ($hasPassword) { ?>
+				<p class="help"><?= _t('ext.email_notifier.smtp_password_help') ?></p>
+				<?php } ?>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="mail_from"><?= _t('ext.email_notifier.mail_from') ?></label>
+			<div class="group-controls">
+				<input type="email" name="mail_from" id="mail_from" placeholder="freshrss@example.com" value="<?=
+					htmlspecialchars($this->getUserConfigurationString('mail_from') ?? '', ENT_COMPAT, 'UTF-8') ?>" />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="group-name" for="mail_to"><?= _t('ext.email_notifier.mail_to') ?></label>
+			<div class="group-controls">
+				<input type="email" name="mail_to" id="mail_to" multiple="multiple" placeholder="me@example.com" value="<?=
+					htmlspecialchars($this->getUserConfigurationString('mail_to') ?? '', ENT_COMPAT, 'UTF-8') ?>" />
+				<p class="help"><?= _t('ext.email_notifier.mail_to_help') ?></p>
+			</div>
+		</div>
+	</fieldset>
+
+	<div class="form-group form-actions">
+		<div class="group-controls">
+			<button type="submit" class="btn btn-important"><?= _t('gen.action.submit') ?></button>
+			<button type="submit" class="btn" name="send_test" value="1"><?= _t('ext.email_notifier.send_test') ?></button>
+			<button type="reset" class="btn"><?= _t('gen.action.cancel') ?></button>
+		</div>
+	</div>
+</form>

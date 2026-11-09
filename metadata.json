@@ -1,0 +1,8 @@
+{
+	"name": "Email Notifier",
+	"author": "xExtension-EmailNotifier",
+	"description": "Sends an email through your own SMTP server whenever a new item appears in one of the feeds you select.",
+	"version": "1.0.0",
+	"entrypoint": "EmailNotifier",
+	"type": "user"
+}
